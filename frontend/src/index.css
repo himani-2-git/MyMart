@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #54c750;
+  --color-primary-dark: #3e9b38;
+  --color-primary-light: #8bf088;
+  --color-dark-bg: #030603;
+  --color-dark-surface: #060c06;
+  --color-dark-card: #1e1e1e;
+  --color-dark-border: #3e3f3e;
+  --color-dark-text: #f0f2f0;
+  --color-dark-muted: #5b5b5b;
+}
+
+@layer base {
+  body {
+    @apply text-dark-text;
+    background-color: var(--color-dark-bg);
+    font-family: 'Inter', sans-serif;
+    background-image: radial-gradient(circle at 80% 20%, rgba(84, 199, 80, 0.15) 0%, transparent 50%), radial-gradient(circle at 20% 80%, rgba(84, 199, 80, 0.05) 0%, transparent 40%);
+    background-attachment: fixed;
+  }
+
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #060c06;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #3e3f3e;
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #54c75044;
+  }
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-area, .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80mm !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 10px !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    background: white !important;
+    color: black !important;
+  }
+  .print-area p, .print-area span, .print-area h2, .print-area div {
+    color: black !important;
+    border-color: #ddd !important;
+    background-color: transparent !important;
+  }
+  .print-dashboard, .print-dashboard * {
+    visibility: visible;
+  }
+  .print-dashboard {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    padding: 20px !important;
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+  }
+  .print-dashboard p, .print-dashboard span, .print-dashboard h1, .print-dashboard h2, .print-dashboard h3, .print-dashboard div {
+    color: black !important;
+  }
+  .print\:hidden {
+    display: none !important;
+  }
+  @page { 
+    margin: 0; 
+  }
+}
