@@ -21,8 +21,9 @@ const Layout = () => {
         <div className="flex min-h-screen" style={{ backgroundColor: '#0d0d14' }}>
             <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-            <main className="flex-1 lg:ml-64 p-4 md:p-6 overflow-y-auto min-h-screen" style={{ backgroundColor: '#0d0d14' }}>
-                {/* Header Bar */}
+            <main className="flex-1 lg:ml-64 flex flex-col overflow-y-auto min-h-screen" style={{ backgroundColor: '#0d0d14' }}>
+                <div className="flex-1 flex flex-col p-4 md:p-6">
+                    {/* Header Bar */}
                 <div className="flex items-center justify-between mb-5">
                     <div className="flex items-center gap-3">
                         {/* Mobile hamburger */}
@@ -53,12 +54,11 @@ const Layout = () => {
                     </div>
                 </div>
 
-                <div className="max-w-7xl mx-auto flex flex-col min-h-[calc(100vh-80px)]">
-                    <div className="flex-1">
-                        <Outlet />
-                    </div>
-                    <Footer />
+                <div className="max-w-7xl mx-auto w-full flex-1">
+                    <Outlet />
                 </div>
+                </div>
+                <Footer />
             </main>
 
             {/* Global Components */}

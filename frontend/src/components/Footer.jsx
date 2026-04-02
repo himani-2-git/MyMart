@@ -79,10 +79,10 @@ const Footer = () => {
                 <div className="flex flex-col gap-4">
                     <h4 className="text-white font-bold tracking-wide">Ready to grow?</h4>
                     <p className="text-sm" style={{ color: '#6b7280' }}>Join thousands of smart retailers today.</p>
-                    <button className="mt-2 w-max px-6 py-2.5 rounded-xl text-sm font-bold text-black transition-all hover:scale-105 active:scale-95 shadow-lg shadow-[#54c75033]" 
+                    <Link to="/" className="mt-2 w-max px-6 py-2.5 rounded-xl text-sm font-bold text-black transition-all hover:scale-105 active:scale-95 shadow-lg shadow-[#54c75033] inline-block text-center" 
                             style={{ backgroundColor: '#54c750' }}>
                         Get Started
-                    </button>
+                    </Link>
                 </div>
             </div>
 
