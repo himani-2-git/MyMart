@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import API from '../services/api';
 import {
     AreaChart, Area, RadialBarChart, RadialBar,
@@ -8,13 +8,14 @@ import {
     DollarSign, ShoppingBag, Users, Package,
     TrendingUp, TrendingDown, ArrowUpRight, Sparkles, FileDown, Calendar
 } from 'lucide-react';
-import { AuthContext } from '../context/AuthContext';
-import { useSettings } from '../context/SettingsContext';
+import { useAuth } from '../context/auth-context';
+import { useSettings } from '../context/settings-context';
 import { SkeletonCard, SkeletonChart } from '../components/ui/Loader';
 import ReorderRecommendations from '../components/ReorderRecommendations';
 
 const CARD_BG = '#1e1e1e';
 const BORDER = '#3e3f3e';
+const PERIOD_MAP = { Daily: 'daily', Weekly: 'weekly', Monthly: 'monthly' };
 
 /* ── Trend Badge ── */
 const Trend = ({ value, positive = true }) => (
@@ -89,7 +90,7 @@ const ACTIVITY_COLORS = ['#54c750', '#8b5cf6', '#06b6d4', '#22c55e', '#ef4444'];
 
 /* ═══════ MAIN COMPONENT ═══════ */
 const Dashboard = () => {
-    const { user } = useContext(AuthContext);
+    const { user } = useAuth();
     const { currency } = useSettings();
     const [loading, setLoading] = useState(true);
     const [revenueTab, setRevenueTab] = useState('Weekly');
@@ -105,14 +106,12 @@ const Dashboard = () => {
     const [briefing, setBriefing] = useState(null);
     const [briefingLoading, setBriefingLoading] = useState(false);
 
-    const periodMap = { 'Daily': 'daily', 'Weekly': 'weekly', 'Monthly': 'monthly' };
-
     useEffect(() => {
         if (!user) return;
         const fetchDashboard = async () => {
             setLoading(true);
             try {
-                const { data } = await API.get(`/api/dashboard?period=${periodMap[revenueTab]}`);
+                const { data } = await API.get(`/api/dashboard?period=${PERIOD_MAP[revenueTab]}`);
                 setStats(data.stats);
                 setTrends(data.trends);
                 setSalesData(data.chartData);
@@ -132,7 +131,7 @@ const Dashboard = () => {
             try {
                 const { data } = await API.get('/api/ai/briefing');
                 if (data.data?.briefing) setBriefing(data.data.briefing);
-            } catch (e) { /* silent */ }
+            } catch { /* silent */ }
             finally { setBriefingLoading(false); }
         };
         fetchBriefing();

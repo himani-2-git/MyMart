@@ -50,7 +50,7 @@ const addSaleItems = async (req, res, next) => {
             session.endSession();
 
             const custDisplay = customerName || 'Walk-In';
-            await logActivity(req.user._id, 'sale_completed', 'sale', createdSale._id, `Sale for ${custDisplay}: $${createdSale.totalPrice}`);
+            await logActivity(req.user._id, 'sale_completed', 'sale', createdSale._id, `Sale for ${custDisplay}: ${createdSale.totalPrice}`);
 
             res.status(201).json(createdSale);
         } catch (error) {

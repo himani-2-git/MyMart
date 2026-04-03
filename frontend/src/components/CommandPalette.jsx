@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../services/api';
-import { Search, ArrowRight, LayoutDashboard, Package, ShoppingCart, Receipt, ClipboardList, Lightbulb, Settings, TrendingUp, Activity, X } from 'lucide-react';
+import { Search, ArrowRight, LayoutDashboard, Package, ShoppingCart, Receipt, ClipboardList, Lightbulb, Settings, TrendingUp, Activity } from 'lucide-react';
 
 const PAGES = [
     { name: 'Dashboard', path: '/', icon: <LayoutDashboard size={16} />, keywords: ['home', 'overview', 'stats'] },
@@ -28,25 +28,33 @@ const CommandPalette = () => {
     const [products, setProducts] = useState([]);
     const inputRef = useRef(null);
     const navigate = useNavigate();
+    const closePalette = useCallback(() => setIsOpen(false), []);
+    const openPalette = useCallback(() => {
+        setQuery('');
+        setSelectedIndex(0);
+        setIsOpen(true);
+    }, []);
 
     // Keyboard shortcut
     useEffect(() => {
         const handler = (e) => {
             if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
                 e.preventDefault();
-                setIsOpen(prev => !prev);
+                if (isOpen) {
+                    closePalette();
+                } else {
+                    openPalette();
+                }
             }
-            if (e.key === 'Escape') setIsOpen(false);
+            if (e.key === 'Escape') closePalette();
         };
         window.addEventListener('keydown', handler);
         return () => window.removeEventListener('keydown', handler);
-    }, []);
+    }, [closePalette, isOpen, openPalette]);
 
     useEffect(() => {
         if (isOpen) {
-            inputRef.current?.focus();
-            setQuery('');
-            setSelectedIndex(0);
+            requestAnimationFrame(() => inputRef.current?.focus());
             // Load products for search
             API.get('/api/products').then(({ data }) => setProducts(data)).catch(() => { });
         }
@@ -78,11 +86,9 @@ const CommandPalette = () => {
 
     const results = getResults();
 
-    useEffect(() => { setSelectedIndex(0); }, [query]);
-
     const handleSelect = (item) => {
         navigate(item.path || item.action);
-        setIsOpen(false);
+        closePalette();
     };
 
     const handleKeyDown = (e) => {
@@ -101,7 +107,7 @@ const CommandPalette = () => {
 
     return (
         <div className="fixed inset-0 z-[60] flex items-start justify-center pt-[20vh]"
-            onClick={() => setIsOpen(false)}
+            onClick={closePalette}
             style={{ backgroundColor: '#000000bb' }}>
             <div className="w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl"
                 onClick={e => e.stopPropagation()}
@@ -114,7 +120,10 @@ const CommandPalette = () => {
                         ref={inputRef}
                         type="text"
                         value={query}
-                        onChange={e => setQuery(e.target.value)}
+                        onChange={e => {
+                            setQuery(e.target.value);
+                            setSelectedIndex(0);
+                        }}
                         onKeyDown={handleKeyDown}
                         placeholder="Search pages, products, or actions..."
                         className="flex-1 bg-transparent text-white text-sm outline-none placeholder-gray-500"

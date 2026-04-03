@@ -3,11 +3,17 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const mongoose = require('mongoose');
+const path = require('path');
 const connectDB = require('./config/db');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
+const { getAllowedOrigins, isAIConfigured, validateEnv } = require('./config/env');
 
 // Load environment variables
 dotenv.config();
+
+// Validate required environment variables
+const { port, nodeEnv } = validateEnv();
 
 // Connect to MongoDB
 connectDB();
@@ -15,8 +21,13 @@ connectDB();
 const app = express();
 
 // ── Security Middleware ──
-app.use(helmet());
-app.use(cors());
+app.use(helmet({
+    contentSecurityPolicy: false, // Allows React SPA to load resources normally in prod
+}));
+app.use(cors({
+    origin: getAllowedOrigins(),
+    credentials: true
+}));
 app.use(express.json({ limit: '10mb' }));
 
 // ── Rate Limiting ──
@@ -60,18 +71,72 @@ app.use('/api/anomalies', require('./routes/anomalyRoutes'));
 app.use('/api/activity', require('./routes/activityRoutes'));
 app.use('/api/reorder', require('./routes/reorderRoutes'));
 
-// Basic route for testing
-app.get('/', (req, res) => {
-    res.json({ success: true, message: 'MyMart API is running...' });
+// ── System Endpoints ──
+app.get('/health', (req, res) => {
+    res.json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        database: {
+            status: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+            connected: mongoose.connection.readyState === 1
+        },
+        ai: {
+            configured: isAIConfigured()
+        }
+    });
 });
+
+app.get('/readyz', (req, res) => {
+    if (mongoose.connection.readyState === 1) {
+        res.status(200).send('OK');
+    } else {
+        res.status(503).send('Database not ready');
+    }
+});
+
+// ── Serve Frontend in Production ──
+if (nodeEnv === 'production') {
+    const frontendDist = path.join(__dirname, '../frontend/dist');
+    app.use(express.static(frontendDist));
+
+    app.get('*', (req, res, next) => {
+        if (req.originalUrl.startsWith('/api')) {
+            return next();
+        }
+        res.sendFile(path.join(frontendDist, 'index.html'));
+    });
+} else {
+    // Basic route for testing
+    app.get('/', (req, res) => {
+        res.json({ success: true, message: 'MyMart API is running...' });
+    });
+}
 
 // ── Error Handling ──
 app.use(notFound);
 app.use(errorHandler);
 
 // Define Ports
-const PORT = process.env.PORT || 5000;
+const PORT = port || 5000;
 
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
+const server = app.listen(PORT, () => {
+    console.log(`🚀 Server running in ${nodeEnv} mode on port ${PORT}`);
 });
+
+// ── Graceful Shutdown ──
+const shutdown = async () => {
+    console.log('\nShutting down server gently...');
+    server.close(() => {
+        console.log('HTTP server closed.');
+    });
+    
+    if (mongoose.connection.readyState === 1) {
+        await mongoose.connection.close(false);
+        console.log('MongoDB connection closed.');
+    }
+    process.exit(0);
+};
+
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);

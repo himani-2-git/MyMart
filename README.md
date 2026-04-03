@@ -1,306 +1,108 @@
-<p align="center">
-  <h1 align="center">🛒 MyMart — AI-Powered Retail Intelligence Platform</h1>
-  <p align="center">
-    A full-stack supermarket management system with built-in AI analytics, demand forecasting, anomaly detection, and a smart reorder engine — powered by Groq AI.
-  </p>
-</p>
+# MyMart - Intelligent Retail & Supermarket Management Platform
 
-<p align="center">
-  <img src="docs/images/dashboard.png" alt="MyMart Dashboard Overview" width="100%">
-</p>
+MyMart is a fully integrated, modern supermarket management and POS (Point of Sale) system built for speed, reliability, and business intelligence. It provides store managers and staff with exactly what they need to process sales, monitor inventory levels, track expenses, and forecast demand without dealing with cluttered legacy interfaces.
+
+![Dashboard Preview](docs/images/dashboard.png)
 
 ---
 
-## ✨ Features & Visuals
+## 🏗️ Architecture Design
 
-### 📊 Intelligent Dashboard
-Real-time revenue, orders, profit, and trend charts alongside an **AI-generated Daily Briefing**.
-<p align="center"><img src="docs/images/dashboard.png" alt="Intelligent Dashboard" width="100%"></p>
+The project employs a modular, single-server deployment structure optimized for standard cloud hosting architectures. 
 
-### 📦 Smart Inventory Management
-Add, edit, delete products with category filters, robust pagination, and dynamic low-stock alerts.
-<p align="center"><img src="docs/images/inventory.png" alt="Smart Inventory" width="100%"></p>
-
-### 💳 Modern Point of Sale (POS)
-Ultra-fast checkout process featuring customer recognition by phone number and thermal-printer ready smart receipts.
-<p align="center"><img src="docs/images/pos.png" alt="Point of Sale" width="100%"></p>
-
-### 📋 Detailed Sales & Operations
-Track every transaction and business expense with powerful search and customer history filtering capabilities.
-<p align="center"><img src="docs/images/sales_history.png" alt="Sales History" width="100%"></p>
+- **Frontend Application** is a Single Page Application (SPA) built with React and Vite. It compiles down to highly optimized static assets (HTML/CSS/JS).
+- **Backend Application** is an Express JS server acting both as a robust REST API and the static file server for the Frontend application in production environments (`NODE_ENV=production`).
+- **Database** utilizes MongoDB for flexible, high-speed document storage for inventories, dynamic receipt generation, and analytical transaction histories.
+- **AI Intelligence Layer** connects with the Gemini API to analyze historic inventory, sales telemetry, and overhead expenses to draft actionable daily management briefings.
 
 ---
 
-### 🧠 Core System Operations
-| Feature | Description |
-|---|---|
-| **Expenses** | Track and categorize business expenses meticulously |
-| **Settings** | Manage Store Profile details, Security, and Global Currency Preferences |
+## ⚡ Features
 
+### 🛒 Point of Sale & Checkout
+- Lightning-fast POS interface with real-time cart tallying and tax calculation.
+- Support for multiple payment integrations (Cash, Card, UPI).
+- Automatic database synchronization that dynamically decrements inventory stock post-purchase.
 
-### AI Intelligence Layer
-| Feature | Description |
-|---|---|
-| **AI Chat Assistant** | Floating chat widget — ask anything about your store data in real time |
-| **Daily Briefing** | AI-generated morning summary on Dashboard with timezone/currency awareness |
-| **Demand Forecasting** | 4-week moving average with trend detection (rising/declining/stable) and risk assessment |
-| **Anomaly Detection** | Detects sales spikes, inventory drops, unusual transactions, and stagnant stock |
-| **Reorder Engine** | Calculates days-until-stockout and recommended reorder quantities with urgency levels |
-| **Smart Insights** | Dead inventory detection, discount suggestions for near-expiry items, reorder alerts |
-| **AI Explanations** | Natural-language AI explanations perfectly synced with your regional store currency |
+### 📦 Smart Inventory System
+- Add, update, or remove stock with ease.
+- Automated tracking and visual alerts for "Low Stock" items and products nearing their expiration dates.
+- Advanced categorization for streamlined navigation.
 
-### Premium UX
-| Feature | Description |
-|---|---|
-| **Command Palette** | `Ctrl+K` to search pages, products, and actions instantly |
-| **Notification Bell** | Real-time alerts for low stock, expiry, and anomalies |
-| **Onboarding Tour** | 6-step guided walkthrough for first-time users |
-| **Activity Log** | Full audit trail of all store actions |
-| **Theme Toggle** | Dark/Light mode with persistence |
-| **Export** | Dashboard export via browser print API |
+### 📊 Financial Tracking & Analytics
+- Complete Sales History ledger tracking individual receipts, customer details, and precise timestamps.
+- Native CSV Data Exports for processing Sales and Expense tables into accounting softwares.
+- Profit Margin visualizations and overhead expense tracking.
+
+### 🤖 AI-Powered Retail Insights 
+- Generates intelligent reorder recommendations pointing out items causing revenue loss.
+- Predicts upcoming demand thresholds using forecasting logic.
+- Creates plain-language personalized daily briefings summarizing store performance.
 
 ---
 
-## 🏗️ Tech Stack
+## 🔧 Tech Stack
 
-| Layer | Technology |
-|---|---|
-| **Frontend** | React 19 · Vite · Tailwind CSS · Recharts · Lucide Icons |
-| **Backend** | Node.js · Express 5 |
-| **Database** | MongoDB Atlas (Mongoose ODM) |
-| **AI Engine** | Groq API (LLaMA 3.1, Mixtral, Kimi) |
-| **Auth** | JWT-based authentication (bcryptjs) |
-| **Security** | Helmet · Rate limiting · CORS |
+- **Client:** React 18, React Router v6, TailwindCSS (for utility layout structure) + Native CSS (for custom glassmorphism & premium UI), Recharts.
+- **Server:** Node.js (v18+), Express, Mongoose, Helmet, CORS.
+- **Database:** MongoDB
+- **Intelligence:** Google Generative AI (Gemini) integration.
+- **Build Tools:** Vite.
 
 ---
 
-## 📁 Project Structure
-
-```
-MyMart/
-├── backend/
-│   ├── config/           # MongoDB connection + event listeners
-│   ├── controllers/      # HTTP handlers (validation + orchestration)
-│   │   ├── aiController.js        # AI chat, briefing, explain
-│   │   ├── anomalyController.js   # Anomaly detection + AI explain
-│   │   ├── forecastController.js  # Demand forecasting + AI explain
-│   │   ├── reorderController.js   # Reorder recommendations + AI explain
-│   │   ├── insightController.js   # Smart insights
-│   │   ├── dashboardController.js # Dashboard stats & charts
-│   │   ├── productController.js   # Product CRUD
-│   │   ├── saleController.js      # Sales + POS
-│   │   ├── expenseController.js   # Expense tracking
-│   │   ├── authController.js      # Register/Login/Password
-│   │   └── activityController.js  # Activity audit log
-│   ├── intelligence/     # Pure analytical engines (no DB, no HTTP)
-│   │   ├── forecastEngine.js      # Demand forecasting math
-│   │   ├── anomalyEngine.js       # Anomaly detection rules
-│   │   ├── reorderEngine.js       # Reorder calculations
-│   │   ├── insightEngine.js       # Store analytics
-│   │   └── aiNarrativeEngine.js   # All AI prompts & API calls
-│   ├── middleware/       # Auth middleware, error handling
-│   ├── models/           # Mongoose schemas (User, Product, Sale, Expense, ActivityLog)
-│   ├── routes/           # Express route definitions
-│   ├── services/         # AI service (Groq client init, store context builder)
-│   ├── .env              # Environment variables (API keys, DB URI)
-│   └── server.js         # Express app entry point
-├── frontend/
-│   ├── src/
-│   │   ├── components/   # Reusable UI components
-│   │   │   ├── AIChatWidget.jsx        # Floating AI chat
-│   │   │   ├── CommandPalette.jsx      # Ctrl+K search
-│   │   │   ├── NotificationBell.jsx    # Alert notifications
-│   │   │   ├── OnboardingTour.jsx      # First-time user guide
-│   │   │   ├── ReorderRecommendations.jsx # Dashboard reorder cards
-│   │   │   ├── Sidebar.jsx             # Navigation sidebar
-│   │   │   ├── Layout.jsx              # App layout wrapper
-│   │   │   ├── ToastProvider.jsx       # Toast notifications
-│   │   │   ├── ConfirmModal.jsx        # Confirmation dialogs
-│   │   │   └── ErrorBoundary.jsx       # Error boundary
-│   │   ├── context/      # React context providers
-│   │   │   ├── AuthContext.jsx         # Authentication state
-│   │   │   └── ThemeContext.jsx        # Dark/Light theme
-│   │   ├── pages/        # Route-level pages
-│   │   │   ├── Dashboard.jsx     # Overview with charts + AI briefing
-│   │   │   ├── Inventory.jsx     # Product management
-│   │   │   ├── POS.jsx           # Point of Sale checkout
-│   │   │   ├── Expenses.jsx      # Expense tracker
-│   │   │   ├── SalesHistory.jsx  # Transaction history
-│   │   │   ├── Insights.jsx      # Smart analytics
-│   │   │   ├── Forecasting.jsx   # Demand forecasting
-│   │   │   ├── ActivityLog.jsx   # Audit trail
-│   │   │   ├── Settings.jsx      # Profile & password
-│   │   │   ├── Login.jsx         # Login page
-│   │   │   └── Register.jsx      # Registration page
-│   │   ├── services/
-│   │   │   └── api.js            # Axios API client
-│   │   ├── App.jsx               # Route definitions
-│   │   └── main.jsx              # React entry point
-│   └── index.html
-└── README.md
-```
-
----
-
-## 🚀 Getting Started
+## 🚀 Working & Getting Started
 
 ### Prerequisites
-- **Node.js** v18+
-- **MongoDB** — [MongoDB Atlas](https://www.mongodb.com/atlas) (free tier) or local instance
-- **Groq API Key** — [Get free key](https://console.groq.com/keys)
+- Node.js version 18 or above.
+- A running instance of MongoDB (Local or clustered e.g., MongoDB Atlas).
 
-### 1. Clone & Install
+### Installation (Local Development)
 
+1. Clone the repository and install dependencies concurrently:
 ```bash
-git clone <your-repo-url>
-cd MyMart
-
-# Install dependencies for root, frontend, and backend all at once
 npm run install-all
 ```
 
-### 2. Configure Environment
-
-Create `backend/.env`:
-
+2. Establish your Environment setups. Configure your `.env` within the `backend` directory adapting `.env.example`:
 ```env
 PORT=5000
 MONGODB_URI=your_mongodb_connection_string
-JWT_SECRET=your_secret_key
-GROQ_API_KEY=your_groq_api_key
-GROQ_MODEL=llama-3.1-8b-instant
+JWT_SECRET=your_secure_randomjwt_key
+GEMINI_API_KEY=your_gemini_api_key
 ```
 
-> **Supported models:** `llama-3.1-8b-instant`, `llama-3.1-70b-versatile`, `llama-3.3-70b-versatile`, `mixtral-8x7b-32768`, `moonshotai/kimi-k2-instruct-0905`
-
-### 3. Seed Database (Optional)
-
+3. Start both the backend and frontend using concurrently:
 ```bash
-cd backend
-node seed.js
-```
-
-This creates sample products, sales, and expenses, plus a default admin account.
-
-### 4. Run the Application
-
-The application leverages Concurrently to run both the frontend and backend servers together in a single terminal.
-
-```bash
-# From the root MyMart directory:
 npm run dev
 ```
+*Note: The frontend operates at `:5173` and automatically proxies API calls to the backend on `:5000` via Vite configuration.*
 
-*(Frontend runs on http://localhost:5173, Backend on http://localhost:5000)*
+### Deploying for Production (Single Server Instance)
 
-### 5. Login
+The architecture is wired to serve everything via the Express Node application.
 
-Default admin credentials (from seed):
-- **Email:** `admin@mymart.com`
-- **Password:** `password123`
-
----
-
-## 🧠 Architecture — Intelligence Layer
-
+1. Generate the optimized frontend production assets:
+```bash
+npm run build
 ```
-HTTP Request
-  → Controller (validation + DB queries)
-    → Intelligence Engine (pure computation)
-      → aiNarrativeEngine (Groq AI prompts)
-    ← Structured result
-  ← JSON Response
+*(This builds the React application into the `frontend/dist` folder.)*
+
+2. Boot the Production Server:
+```bash
+NODE_ENV=production npm start
 ```
-
-Controllers contain **zero analytical logic**. All computation lives in `backend/intelligence/` as pure, unit-testable functions. AI narratives are generated server-side using a single Groq API key — no per-user configuration needed.
-
----
-
-## 📡 API Endpoints
-
-### Auth
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/auth/register` | Register new user |
-| POST | `/api/auth/login` | Login, returns JWT token |
-| PUT | `/api/auth/password` | Change password |
-
-### Products
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/api/products` | List all products |
-| POST | `/api/products` | Add product |
-| PUT | `/api/products/:id` | Update product |
-| DELETE | `/api/products/:id` | Delete product |
-
-### Sales
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/api/sales` | Sales history |
-| POST | `/api/sales` | Create sale (POS checkout) |
-
-### Expenses
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/api/expenses` | List expenses |
-| POST | `/api/expenses` | Add expense |
-| PUT | `/api/expenses/:id` | Update expense |
-| DELETE | `/api/expenses/:id` | Delete expense |
-
-### AI Features
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/ai/chat` | AI chat assistant |
-| GET | `/api/ai/briefing` | Daily AI briefing |
-| POST | `/api/ai/explain` | AI explanation for insights |
-
-### Intelligence & Analytics
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/api/forecast` | Demand forecasts with risk levels |
-| POST | `/api/forecast/explain` | AI forecast explanation |
-| GET | `/api/anomalies` | Detected anomalies |
-| POST | `/api/anomalies/explain` | AI anomaly explanation |
-| GET | `/api/reorder/recommendations` | Reorder suggestions |
-| POST | `/api/reorder/explain` | AI reorder explanation |
-| GET | `/api/insights` | Smart insights (dead stock, discounts, reorders) |
-| GET | `/api/dashboard` | Dashboard stats, charts, trends |
-| GET | `/api/activity` | Activity audit log |
+*(The backend running on port 5000 will natively serve the REST APIs alongside the full-stack static React application, allowing unified hosting).* 
 
 ---
 
-## 🔒 Security
+### UI Previews
 
-- **Authentication:** JWT tokens on all protected routes
-- **Password Hashing:** bcryptjs with salt rounds
-- **Security Headers:** Helmet middleware
-- **Rate Limiting:**
-  - General: 500 requests / 15 min
-  - Auth: 20 requests / 15 min (brute-force protection)
-  - AI: 60 requests / 15 min
-- **CORS:** Enabled via cors middleware
-- **Input Validation:** express-validator
+#### Point of Sale Terminal
+![POS Preview](docs/images/pos.png)
 
----
+#### Live Inventory Tracking
+![Inventory Preview](docs/images/inventory.png)
 
-## 🛠️ Available Scripts
-
-### Backend
-| Script | Command | Description |
-|---|---|---|
-| Start | `npm start` | Run server |
-| Dev | `npm run dev` | Run server (development) |
-| Seed | `node seed.js` | Seed database with sample data |
-
-### Frontend
-| Script | Command | Description |
-|---|---|---|
-| Dev | `npm run dev` | Start Vite dev server |
-| Build | `npm run build` | Production build |
-| Preview | `npm run preview` | Preview production build |
-
----
-
-## 📄 License
-
-MIT
+#### Transaction Ledgers
+![Sales History Preview](docs/images/sales_history.png)

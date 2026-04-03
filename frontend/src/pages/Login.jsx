@@ -1,22 +1,22 @@
-import React, { useState, useContext } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
-import { useToast } from '../components/ToastProvider';
-import { Lock, Mail } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate, Link, Navigate } from 'react-router-dom';
+import { useAuth } from '../context/auth-context';
+import { useToast } from '../components/toast-context';
+import { Lock, Mail, Eye, EyeOff } from 'lucide-react';
 import Logo from '../components/Logo';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const { login, user } = useContext(AuthContext);
+    const [showPassword, setShowPassword] = useState(false);
+    const { login, user } = useAuth();
     const navigate = useNavigate();
     const toast = useToast();
 
     // Redirect if already logged in
     if (user) {
-        navigate('/', { replace: true });
-        return null;
+        return <Navigate to="/" replace />;
     }
 
     const submitHandler = async (e) => {
@@ -74,8 +74,8 @@ const Login = () => {
                                 <Lock className="h-5 w-5" style={{ color: '#4a4a6a' }} />
                             </div>
                             <input
-                                id="password" name="password" type="password" required
-                                className="w-full pl-11 pr-4 py-3.5 rounded-xl text-sm outline-none transition-all"
+                                id="password" name="password" type={showPassword ? 'text' : 'password'} required
+                                className="w-full pl-11 pr-11 py-3.5 rounded-xl text-sm outline-none transition-all"
                                 style={{
                                     backgroundColor: '#1e1e1e', border: '1px solid #3e3f3e',
                                     color: '#e2e8f0', caretColor: '#54c750',
@@ -86,6 +86,13 @@ const Login = () => {
                                 onBlur={e => e.target.style.borderColor = '#3e3f3e'}
                                 onChange={e => setPassword(e.target.value)}
                             />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-gray-300 transition-colors"
+                            >
+                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                            </button>
                         </div>
 
                         <button

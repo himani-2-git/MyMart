@@ -1,15 +1,15 @@
-import React, { useState, useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
-import { useSettings } from '../context/SettingsContext';
-import { useToast } from '../components/ToastProvider';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/auth-context';
+import { useSettings } from '../context/settings-context';
+import { useToast } from '../components/toast-context';
 import API from '../services/api';
-import { Settings as SettingsIcon, User, Mail, Shield, Lock, Save, BadgeCheck, Globe } from 'lucide-react';
+import { Settings as SettingsIcon, User, Shield, Lock, Save, BadgeCheck, Globe, Server, Database, Sparkles } from 'lucide-react';
 
 const S = { card: '#1e1e1e', surface: '#060c06', border: '#3e3f3e', muted: '#6b7280' };
 const inputSt = { backgroundColor: '#060c06', border: '1px solid #3e3f3e', color: '#e2e8f0', borderRadius: '12px', padding: '10px 14px', outline: 'none', width: '100%', fontSize: '14px' };
 
 const Settings = () => {
-    const { user, updateUser } = useContext(AuthContext);
+    const { user, updateUser } = useAuth();
     const { currency, setCurrency, currencies } = useSettings();
     const toast = useToast();
     const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
@@ -29,8 +29,25 @@ const Settings = () => {
         niche: user?.storeDetails?.niche || ''
     });
     const [savingStore, setSavingStore] = useState(false);
+    const [systemHealth, setSystemHealth] = useState(null);
+    const [loadingSystemHealth, setLoadingSystemHealth] = useState(true);
 
     const initials = user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'A';
+
+    useEffect(() => {
+        const fetchSystemHealth = async () => {
+            try {
+                const { data } = await API.get('/health');
+                setSystemHealth(data);
+            } catch {
+                setSystemHealth(null);
+            } finally {
+                setLoadingSystemHealth(false);
+            }
+        };
+
+        fetchSystemHealth();
+    }, []);
 
     const handleProfileUpdate = async (e) => {
         e.preventDefault();
@@ -225,6 +242,54 @@ const Settings = () => {
                             ))}
                         </select>
                     </div>
+                </div>
+            </div>
+
+            <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: S.card, border: `1px solid ${S.border}` }}>
+                <div className="p-4 flex items-center gap-2" style={{ borderBottom: `1px solid ${S.border}`, backgroundColor: S.surface }}>
+                    <Server size={18} className="text-white" />
+                    <h2 className="font-bold text-white">System Status</h2>
+                </div>
+                <div className="p-6 space-y-4">
+                    {loadingSystemHealth ? (
+                        <p className="text-sm" style={{ color: S.muted }}>Checking backend status...</p>
+                    ) : (
+                        <>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                {[
+                                    {
+                                        label: 'API',
+                                        value: systemHealth?.status === 'ok' ? 'Online' : 'Offline',
+                                        icon: <Server size={16} />,
+                                        tone: systemHealth?.status === 'ok' ? '#22c55e' : '#ef4444',
+                                    },
+                                    {
+                                        label: 'Database',
+                                        value: systemHealth?.database?.status || 'unknown',
+                                        icon: <Database size={16} />,
+                                        tone: systemHealth?.database?.connected ? '#22c55e' : '#f97316',
+                                    },
+                                    {
+                                        label: 'AI Features',
+                                        value: systemHealth?.ai?.configured ? 'Configured' : 'Not configured',
+                                        icon: <Sparkles size={16} />,
+                                        tone: systemHealth?.ai?.configured ? '#22c55e' : '#f97316',
+                                    },
+                                ].map((item) => (
+                                    <div key={item.label} className="rounded-xl p-4" style={{ backgroundColor: S.surface, border: `1px solid ${S.border}` }}>
+                                        <div className="flex items-center gap-2 mb-2" style={{ color: item.tone }}>
+                                            {item.icon}
+                                            <span className="text-xs font-semibold uppercase tracking-wide">{item.label}</span>
+                                        </div>
+                                        <p className="text-sm font-bold text-white capitalize">{item.value}</p>
+                                    </div>
+                                ))}
+                            </div>
+                            <p className="text-xs leading-relaxed" style={{ color: S.muted }}>
+                                AI tools are powered from the backend server environment. For production hosting, keep your Groq API key on the server and set `VITE_API_URL` only when the frontend is deployed separately from the API.
+                            </p>
+                        </>
+                    )}
                 </div>
             </div>
 

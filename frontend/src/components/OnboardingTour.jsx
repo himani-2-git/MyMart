@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Package, ShoppingCart, Lightbulb, Settings, X, ChevronRight, ChevronLeft, Sparkles } from 'lucide-react';
+import React, { useState } from 'react';
+import { LayoutDashboard, Package, ShoppingCart, Lightbulb, Settings, ChevronRight, ChevronLeft, Sparkles } from 'lucide-react';
 
 const STEPS = [
     {
@@ -28,20 +28,15 @@ const STEPS = [
         icon: <Lightbulb className="text-white" size={28} />,
     },
     {
-        title: 'Configure Your AI Key',
-        description: 'Go to Settings → AI Configuration to add your free Gemini API key. This unlocks the AI chat assistant, daily briefings, and smart recommendations.',
+        title: 'Production AI Setup',
+        description: 'AI features are enabled from the backend server using a Groq API key. Once hosting is configured, chat, briefings, and smart recommendations start working automatically.',
         icon: <Settings className="text-rose-400" size={28} />,
     },
 ];
 
 const OnboardingTour = ({ onComplete }) => {
     const [step, setStep] = useState(0);
-    const [show, setShow] = useState(false);
-
-    useEffect(() => {
-        const hasSeen = localStorage.getItem('mymart-onboarding-done');
-        if (!hasSeen) setShow(true);
-    }, []);
+    const [show, setShow] = useState(() => !localStorage.getItem('mymart-onboarding-done'));
 
     const finish = () => {
         localStorage.setItem('mymart-onboarding-done', 'true');

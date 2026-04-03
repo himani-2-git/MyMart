@@ -1,8 +1,8 @@
-import React, { useState, useContext } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
-import { useToast } from '../components/ToastProvider';
-import { Lock, Mail, User } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate, Link, Navigate } from 'react-router-dom';
+import { useAuth } from '../context/auth-context';
+import { useToast } from '../components/toast-context';
+import { Lock, Mail, User, Eye, EyeOff } from 'lucide-react';
 import Logo from '../components/Logo';
 
 const Register = () => {
@@ -11,13 +11,14 @@ const Register = () => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const { register, user } = useContext(AuthContext);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const { register, user } = useAuth();
     const navigate = useNavigate();
     const toast = useToast();
 
     if (user) {
-        navigate('/', { replace: true });
-        return null;
+        return <Navigate to="/" replace />;
     }
 
     const submitHandler = async (e) => {
@@ -98,8 +99,8 @@ const Register = () => {
                             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                 <Lock className="h-5 w-5" style={{ color: '#4a4a6a' }} />
                             </div>
-                            <input type="password" required
-                                className="w-full pl-11 pr-4 py-3.5 rounded-xl text-sm outline-none transition-all"
+                            <input type={showPassword ? 'text' : 'password'} required
+                                className="w-full pl-11 pr-11 py-3.5 rounded-xl text-sm outline-none transition-all"
                                 style={inputStyle}
                                 placeholder="Password (min 6 characters)"
                                 value={password}
@@ -107,14 +108,21 @@ const Register = () => {
                                 onBlur={e => e.target.style.borderColor = '#3e3f3e'}
                                 onChange={e => setPassword(e.target.value)}
                             />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-gray-300 transition-colors"
+                            >
+                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                            </button>
                         </div>
 
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                 <Lock className="h-5 w-5" style={{ color: '#4a4a6a' }} />
                             </div>
-                            <input type="password" required
-                                className="w-full pl-11 pr-4 py-3.5 rounded-xl text-sm outline-none transition-all"
+                            <input type={showConfirmPassword ? 'text' : 'password'} required
+                                className="w-full pl-11 pr-11 py-3.5 rounded-xl text-sm outline-none transition-all"
                                 style={inputStyle}
                                 placeholder="Confirm password"
                                 value={confirmPassword}
@@ -122,6 +130,13 @@ const Register = () => {
                                 onBlur={e => e.target.style.borderColor = '#3e3f3e'}
                                 onChange={e => setConfirmPassword(e.target.value)}
                             />
+                            <button
+                                type="button"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-gray-300 transition-colors"
+                            >
+                                {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                            </button>
                         </div>
 
                         <button

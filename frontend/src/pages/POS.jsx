@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import API from '../services/api';
-import { AuthContext } from '../context/AuthContext';
-import { useSettings } from '../context/SettingsContext';
-import { useToast } from '../components/ToastProvider';
+import { useAuth } from '../context/auth-context';
+import { useSettings } from '../context/settings-context';
+import { useToast } from '../components/toast-context';
 import { Search, ShoppingCart, Trash2, CheckCircle, Receipt, CreditCard, Banknote, Smartphone, User, Phone, Printer } from 'lucide-react';
 
 const S = { card: '#1e1e1e', surface: '#060c06', border: '#3e3f3e', muted: '#6b7280' };
@@ -14,7 +14,7 @@ const PAYMENT_METHODS = [
 ];
 
 const POS = () => {
-    const { user } = useContext(AuthContext);
+    const { user } = useAuth();
     const store = user?.storeDetails || {};
     const { currency } = useSettings();
     const [products, setProducts] = useState([]);
@@ -31,13 +31,16 @@ const POS = () => {
     const [customerStatus, setCustomerStatus] = useState(''); // 'new', 'returning', 'loading', ''
     const toast = useToast();
 
-    const fetchProducts = async () => {
+    const fetchProducts = useCallback(async () => {
         try {
             const { data } = await API.get('/api/products');
             setProducts(data); setLoading(false);
-        } catch (e) { toast.error('Failed to load products'); setLoading(false); }
-    };
-    useEffect(() => { fetchProducts(); }, []);
+        } catch {
+            toast.error('Failed to load products');
+            setLoading(false);
+        }
+    }, [toast]);
+    useEffect(() => { fetchProducts(); }, [fetchProducts]);
 
     const addToCart = (product) => {
         if (product.quantity <= 0) { toast.error('Out of stock!'); return; }
@@ -72,7 +75,7 @@ const POS = () => {
             } else {
                 setCustomerStatus('new');
             }
-        } catch (e) {
+        } catch {
             setCustomerStatus('');
         }
     };
@@ -91,8 +94,8 @@ const POS = () => {
             setCheckoutStatus('success'); setCart([]); fetchProducts();
             setCustomerName(''); setCustomerPhone(''); setCustomerStatus('');
             toast.success('Transaction completed successfully!');
-        } catch (e) {
-            toast.error(e.response?.data?.message || 'Checkout failed!');
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Checkout failed!');
         } finally {
             setCheckingOut(false);
         }
@@ -161,7 +164,7 @@ const POS = () => {
     );
 
     return (
-        <div className="flex flex-col lg:flex-row gap-5" style={{ height: 'calc(100vh - 7rem)' }}>
+        <div className="flex flex-col lg:flex-row gap-5" style={{ minHeight: 'calc(100vh - 7rem)' }}>
             {checkoutStatus === 'success' && <ReceiptModal />}
 
             {/* Products Grid */}
@@ -195,38 +198,46 @@ const POS = () => {
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500" />
                         </div>
                     ) : (
-                        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                            {filteredProducts.map(product => (
-                                <div key={product._id} onClick={() => addToCart(product)}
-                                    className="rounded-xl p-4 flex flex-col justify-between transition-all"
-                                    style={{
-                                        backgroundColor: '#060c06',
-                                        border: product.quantity > 0 ? '1px solid #3e3f3e' : '1px solid #ef444433',
-                                        cursor: product.quantity > 0 ? 'pointer' : 'not-allowed',
-                                        opacity: product.quantity <= 0 ? 0.5 : 1,
-                                    }}
-                                    onMouseEnter={e => product.quantity > 0 && (e.currentTarget.style.borderColor = '#54c750')}
-                                    onMouseLeave={e => product.quantity > 0 && (e.currentTarget.style.borderColor = '#3e3f3e')}>
-                                    <div>
-                                        <div className="flex items-start justify-between mb-2">
-                                            <span className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-md"
-                                                style={{ backgroundColor: '#3e3f3e', color: '#9ca3af' }}>{product.category}</span>
-                                            {product.quantity <= 0 && (
-                                                <span className="text-xs font-bold px-2 py-0.5 rounded-md"
-                                                    style={{ backgroundColor: '#ef444422', color: '#ef4444' }}>Out</span>
-                                            )}
+                        filteredProducts.length === 0 ? (
+                            <div className="h-full flex flex-col items-center justify-center text-center p-6">
+                                <Search className="h-10 w-10 mb-3" style={{ color: '#3e3f3e' }} />
+                                <p className="font-medium" style={{ color: S.muted }}>No products match your search</p>
+                                <p className="text-xs mt-1" style={{ color: '#4a4a6a' }}>Try another keyword or category.</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                                {filteredProducts.map(product => (
+                                    <div key={product._id} onClick={() => addToCart(product)}
+                                        className="rounded-xl p-4 flex flex-col justify-between transition-all"
+                                        style={{
+                                            backgroundColor: '#060c06',
+                                            border: product.quantity > 0 ? '1px solid #3e3f3e' : '1px solid #ef444433',
+                                            cursor: product.quantity > 0 ? 'pointer' : 'not-allowed',
+                                            opacity: product.quantity <= 0 ? 0.5 : 1,
+                                        }}
+                                        onMouseEnter={e => product.quantity > 0 && (e.currentTarget.style.borderColor = '#54c750')}
+                                        onMouseLeave={e => product.quantity > 0 && (e.currentTarget.style.borderColor = '#3e3f3e')}>
+                                        <div>
+                                            <div className="flex items-start justify-between mb-2">
+                                                <span className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-md"
+                                                    style={{ backgroundColor: '#3e3f3e', color: '#9ca3af' }}>{product.category}</span>
+                                                {product.quantity <= 0 && (
+                                                    <span className="text-xs font-bold px-2 py-0.5 rounded-md"
+                                                        style={{ backgroundColor: '#ef444422', color: '#ef4444' }}>Out</span>
+                                                )}
+                                            </div>
+                                            <h3 className="font-bold text-white text-sm leading-tight mb-1">{product.name}</h3>
+                                            <p className="font-bold text-white">{currency}{product.sellingPrice.toFixed(2)}</p>
                                         </div>
-                                        <h3 className="font-bold text-white text-sm leading-tight mb-1">{product.name}</h3>
-                                        <p className="font-bold text-white">{currency}{product.sellingPrice.toFixed(2)}</p>
+                                        <div className="mt-3 flex items-center gap-1.5 text-xs" style={{ color: S.muted }}>
+                                            <span className="w-2 h-2 rounded-full flex-shrink-0"
+                                                style={{ backgroundColor: product.quantity > 10 ? '#22c55e' : product.quantity > 0 ? '#54c750' : '#ef4444' }} />
+                                            Stock: {product.quantity}
+                                        </div>
                                     </div>
-                                    <div className="mt-3 flex items-center gap-1.5 text-xs" style={{ color: S.muted }}>
-                                        <span className="w-2 h-2 rounded-full flex-shrink-0"
-                                            style={{ backgroundColor: product.quantity > 10 ? '#22c55e' : product.quantity > 0 ? '#54c750' : '#ef4444' }} />
-                                        Stock: {product.quantity}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        )
                     )}
                 </div>
             </div>

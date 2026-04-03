@@ -1,17 +1,15 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard, Package, ShoppingCart, DollarSign,
     Lightbulb, LogOut, Settings, ShoppingBag,
-    ClipboardList, X, TrendingUp, Activity, Sun, Moon
+    ClipboardList, X, TrendingUp, Activity
 } from 'lucide-react';
-import { AuthContext } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/auth-context';
 import { BrandLogo } from './Logo';
 
 const Sidebar = ({ isOpen, onClose }) => {
-    const { logout, user } = useContext(AuthContext);
-    const { theme, toggleTheme } = useTheme();
+    const { logout, user } = useAuth();
     const navigate = useNavigate();
 
     const navItems = [
@@ -131,13 +129,6 @@ const Sidebar = ({ isOpen, onClose }) => {
                             <p className="text-sm font-semibold text-white truncate">{user?.name || 'Admin'}</p>
                             <p className="text-xs truncate" style={{ color: '#6b7280' }}>{user?.email || ''}</p>
                         </div>
-                        {/* Theme Toggle */}
-                        <button onClick={toggleTheme}
-                            className="p-1.5 rounded-lg transition-colors"
-                            style={{ color: '#6b7280' }}
-                            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
-                            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-                        </button>
                     </div>
 
                     {/* Settings */}

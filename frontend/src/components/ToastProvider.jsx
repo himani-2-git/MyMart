@@ -1,13 +1,6 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { CheckCircle, AlertCircle, Info, X } from 'lucide-react';
-
-const ToastContext = createContext();
-
-export const useToast = () => {
-    const context = useContext(ToastContext);
-    if (!context) throw new Error('useToast must be used within ToastProvider');
-    return context;
-};
+import { ToastContext } from './toast-context';
 
 const TOAST_ICONS = {
     success: <CheckCircle size={18} />,

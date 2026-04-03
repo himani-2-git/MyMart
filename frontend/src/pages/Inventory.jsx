@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import API from '../services/api';
-import { useSettings } from '../context/SettingsContext';
-import { useToast } from '../components/ToastProvider';
+import { useSettings } from '../context/settings-context';
+import { useToast } from '../components/toast-context';
 import ConfirmModal from '../components/ConfirmModal';
 import { SkeletonTable } from '../components/ui/Loader';
 import { Plus, Edit2, Trash2, Search, AlertTriangle, X, Clock, ChevronLeft, ChevronRight, PackagePlus } from 'lucide-react';
@@ -33,16 +33,16 @@ const Inventory = () => {
     const [saving, setSaving] = useState(false);
     const toast = useToast();
 
-    const fetchProducts = async () => {
+    const fetchProducts = useCallback(async () => {
         try {
             const { data } = await API.get('/api/products');
             setProducts(data); setLoading(false);
-        } catch (error) {
+        } catch {
             toast.error('Failed to load products');
             setLoading(false);
         }
-    };
-    useEffect(() => { fetchProducts(); }, []);
+    }, [toast]);
+    useEffect(() => { fetchProducts(); }, [fetchProducts]);
 
     const handleInputChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -101,9 +101,25 @@ const Inventory = () => {
         setSaving(true);
         try {
             const updatedProduct = {
-                ...restockTarget,
+                name: restockTarget.name,
+                category: restockTarget.category,
+                costPrice: restockTarget.costPrice,
+                sellingPrice: restockTarget.sellingPrice,
                 quantity: Number(restockTarget.quantity) + Number(restockQty)
             };
+
+            if (restockTarget.expiryDate) {
+                updatedProduct.expiryDate = new Date(restockTarget.expiryDate).toISOString().split('T')[0];
+            }
+
+            if (restockTarget.supplierName) {
+                updatedProduct.supplierName = restockTarget.supplierName;
+            }
+
+            if (restockTarget.barcode) {
+                updatedProduct.barcode = restockTarget.barcode;
+            }
+
             await API.put(`/api/products/${restockTarget._id}`, updatedProduct);
             toast.success(`Successfully restocked ${restockTarget.name}`);
             fetchProducts();

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import API from '../services/api';
-import { useSettings } from '../context/SettingsContext';
+import { useSettings } from '../context/settings-context';
 import Loader from '../components/ui/Loader';
 import { Activity, Package, ShoppingCart, Receipt, User, Settings, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -34,7 +34,7 @@ const ActivityLog = () => {
             const { data } = await API.get(`/api/activity?page=${p}&limit=25`);
             setActivities(data.data);
             setPagination(data.pagination);
-        } catch (e) {
+        } catch {
             // Silent fail
         } finally {
             setLoading(false);

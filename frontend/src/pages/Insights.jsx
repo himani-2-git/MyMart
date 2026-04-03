@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import API from '../services/api';
-import { useSettings } from '../context/SettingsContext';
-import { useToast } from '../components/ToastProvider';
+import { useSettings } from '../context/settings-context';
+import { useToast } from '../components/toast-context';
 import Loader from '../components/ui/Loader';
 import { Lightbulb, TrendingDown, Tag, AlertCircle, FileSearch, RefreshCcw } from 'lucide-react';
 
@@ -14,21 +14,21 @@ const Insights = () => {
     const [refreshing, setRefreshing] = useState(false);
     const toast = useToast();
 
-    const fetchInsights = async (isRefresh = false) => {
+    const fetchInsights = useCallback(async (isRefresh = false) => {
         if (isRefresh) setRefreshing(true);
         try {
             const { data } = await API.get('/api/insights');
             setInsights(data);
             if (isRefresh) toast.success('Insights refreshed');
-        } catch (e) {
+        } catch {
             toast.error('Failed to load insights');
         } finally {
             setLoading(false);
             setRefreshing(false);
         }
-    };
+    }, [toast]);
 
-    useEffect(() => { fetchInsights(); }, []);
+    useEffect(() => { fetchInsights(); }, [fetchInsights]);
 
     const sectionConfig = {
         reorder: { color: '#54c750', bg: '#54c75022', border: '#54c75033' },

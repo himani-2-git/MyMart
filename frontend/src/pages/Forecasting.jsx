@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import API from '../services/api';
-import { useToast } from '../components/ToastProvider';
+import { useToast } from '../components/toast-context';
 import Loader from '../components/ui/Loader';
 import {
     TrendingUp, TrendingDown, Minus, AlertTriangle, Package, Sparkles, ChevronDown, ChevronUp
@@ -29,19 +29,20 @@ const Forecasting = () => {
     const [aiLoading, setAiLoading] = useState({});
     const toast = useToast();
 
+    const fetchForecasts = useCallback(async () => {
+        try {
+            const { data } = await API.get('/api/forecast');
+            setForecasts(data.data);
+        } catch {
+            toast.error('Failed to load forecasts');
+        } finally {
+            setLoading(false);
+        }
+    }, [toast]);
+
     useEffect(() => {
-        const fetchForecasts = async () => {
-            try {
-                const { data } = await API.get('/api/forecast');
-                setForecasts(data.data);
-            } catch (e) {
-                toast.error('Failed to load forecasts');
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchForecasts();
-    }, []);
+    }, [fetchForecasts]);
 
     const getAIExplanation = async (forecast) => {
         const id = forecast._id;
@@ -50,8 +51,8 @@ const Forecasting = () => {
         try {
             const { data } = await API.post('/api/forecast/explain', { forecastData: forecast });
             setAiExplanation(prev => ({ ...prev, [id]: data.data.explanation }));
-        } catch (e) {
-            const msg = e.response?.data?.message || 'AI explanation unavailable';
+        } catch (error) {
+            const msg = error.response?.data?.message || 'AI explanation unavailable';
             setAiExplanation(prev => ({ ...prev, [id]: `⚠️ ${msg}` }));
         } finally {
             setAiLoading(prev => ({ ...prev, [id]: false }));
@@ -159,7 +160,7 @@ const Forecasting = () => {
                                                                 </span>
                                                             ) : (
                                                                 <span style={{ whiteSpace: 'pre-wrap' }}>
-                                                                    {aiExplanation[f._id] || 'No AI explanation available. Configure your API key in Settings.'}
+                                                                    {aiExplanation[f._id] || 'No AI explanation available. Configure the backend Groq environment to enable production AI summaries.'}
                                                                 </span>
                                                             )}
                                                         </div>

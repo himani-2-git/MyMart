@@ -1,8 +1,11 @@
 import axios from 'axios';
 
-// Centralized API instance — uses env var or defaults to localhost
+const defaultBaseURL = import.meta.env.VITE_API_URL
+    || (import.meta.env.DEV ? 'http://localhost:5000' : '');
+
 const API = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000',
+    baseURL: defaultBaseURL,
+    timeout: 15000,
     headers: {
         'Content-Type': 'application/json',
     },
@@ -18,7 +21,7 @@ API.interceptors.request.use(
                 if (token) {
                     config.headers.Authorization = `Bearer ${token}`;
                 }
-            } catch (e) {
+            } catch {
                 // Invalid stored data — ignore
             }
         }
@@ -45,7 +48,7 @@ API.interceptors.response.use(
             localStorage.removeItem('userInfo');
             // Only redirect if not already on login/register
             if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
-                window.location.href = '/login';
+                window.location.assign('/login');
             }
         }
         return Promise.reject(error);

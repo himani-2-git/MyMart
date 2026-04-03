@@ -1,7 +1,6 @@
-import React, { createContext, useState } from 'react';
+import React, { useState } from 'react';
 import API from '../services/api';
-
-export const AuthContext = createContext();
+import { AuthContext } from './auth-context';
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(() => {
@@ -17,14 +16,14 @@ export const AuthProvider = ({ children }) => {
                             localStorage.removeItem('userInfo');
                             return null;
                         }
-                    } catch (e) {
+                    } catch {
                         // Invalid token format
                         localStorage.removeItem('userInfo');
                         return null;
                     }
                 }
                 return parsed;
-            } catch (e) {
+            } catch {
                 localStorage.removeItem('userInfo');
                 return null;
             }

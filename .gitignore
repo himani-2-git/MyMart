@@ -2,4 +2,7 @@ node_modules/
 .env
 dist/
 *.log
+backend-err.log
+backend-out.log
+frontend/build_error.txt
 .DS_Store

@@ -1,7 +1,7 @@
-import React, { useContext, useState } from 'react';
-import { Outlet, Navigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
-import { AuthContext } from '../context/AuthContext';
+import { useAuth } from '../context/auth-context';
 import AIChatWidget from './AIChatWidget';
 import CommandPalette from './CommandPalette';
 import NotificationBell from './NotificationBell';
@@ -10,12 +10,8 @@ import Footer from './Footer';
 import { Menu, Search } from 'lucide-react';
 
 const Layout = () => {
-    const { user } = useContext(AuthContext);
+    const { user } = useAuth();
     const [sidebarOpen, setSidebarOpen] = useState(false);
-
-    if (!user) {
-        return <Navigate to="/login" replace />;
-    }
 
     return (
         <div className="flex min-h-screen" style={{ backgroundColor: '#0d0d14' }}>

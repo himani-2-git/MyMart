@@ -8,7 +8,7 @@ const addExpense = async (req, res, next) => {
     try {
         const expense = new Expense(req.body);
         const createdExpense = await expense.save();
-        await logActivity(req.user._id, 'expense_added', 'expense', createdExpense._id, `Added expense: $${createdExpense.amount} for ${createdExpense.expenseType}`);
+        await logActivity(req.user._id, 'expense_added', 'expense', createdExpense._id, `Added expense: ${createdExpense.amount} for ${createdExpense.expenseType}`);
         res.status(201).json(createdExpense);
     } catch (error) {
         next(error);
@@ -40,7 +40,7 @@ const updateExpense = async (req, res, next) => {
 
         Object.assign(expense, req.body);
         const updatedExpense = await expense.save();
-        await logActivity(req.user._id, 'expense_updated', 'expense', updatedExpense._id, `Updated expense: $${updatedExpense.amount}`);
+        await logActivity(req.user._id, 'expense_updated', 'expense', updatedExpense._id, `Updated expense: ${updatedExpense.amount}`);
         res.json(updatedExpense);
     } catch (error) {
         next(error);
@@ -59,7 +59,7 @@ const deleteExpense = async (req, res, next) => {
         }
 
         await expense.deleteOne();
-        await logActivity(req.user._id, 'expense_deleted', 'expense', expense._id, `Deleted expense: $${expense.amount}`);
+        await logActivity(req.user._id, 'expense_deleted', 'expense', expense._id, `Deleted expense: ${expense.amount}`);
         res.json({ success: true, message: 'Expense removed' });
     } catch (error) {
         next(error);

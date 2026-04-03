@@ -1,6 +1,5 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
-
-const SettingsContext = createContext();
+import React, { useState, useEffect } from 'react';
+import { SettingsContext } from './settings-context';
 
 export const SettingsProvider = ({ children }) => {
     const [currency, setCurrency] = useState(() => {
@@ -29,5 +28,3 @@ export const SettingsProvider = ({ children }) => {
         </SettingsContext.Provider>
     );
 };
-
-export const useSettings = () => useContext(SettingsContext);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import API from '../services/api';
-import { Package, AlertTriangle, Sparkles, ShoppingCart } from 'lucide-react';
+import { AlertTriangle, Sparkles, ShoppingCart } from 'lucide-react';
 
 const urgencyConfig = {
     critical: { color: '#ef4444', bg: '#ef444418', border: '#ef444444', label: '< 2 days' },
@@ -18,7 +18,7 @@ const ReorderRecommendations = () => {
             try {
                 const { data } = await API.get('/api/reorder/recommendations');
                 setItems(data.data || []);
-            } catch (e) { /* silent */ }
+            } catch { /* silent */ }
             finally { setLoading(false); }
         };
         fetch();
@@ -31,8 +31,8 @@ const ReorderRecommendations = () => {
         try {
             const { data } = await API.post('/api/reorder/explain', { recommendation: item });
             setAiExplanations(prev => ({ ...prev, [id]: data.data.explanation }));
-        } catch (e) {
-            setAiExplanations(prev => ({ ...prev, [id]: '⚠️ AI explanation unavailable — configure your API key in Settings.' }));
+        } catch {
+            setAiExplanations(prev => ({ ...prev, [id]: 'AI explanation unavailable right now. Check that the backend Groq configuration is set for this deployment.' }));
         } finally {
             setAiLoading(prev => ({ ...prev, [id]: false }));
         }
@@ -90,7 +90,7 @@ const ReorderRecommendations = () => {
                                     <div className="flex items-center gap-3 mt-1 text-xs" style={{ color: '#6b7280' }}>
                                         <span>Stock: <strong className="text-white">{item.currentStock}</strong></span>
                                         <span>•</span>
-                                        <span>Avg: <strong className="text-white">{item.averageDailySales}/day</strong></span>
+                                        <span>Avg: <strong className="text-white">{item.averageDailySales > 0 ? `${item.averageDailySales}/day` : 'No recent sales'}</strong></span>
                                         <span>•</span>
                                         <span>Reorder: <strong style={{ color: '#22c55e' }}>+{item.recommendedReorderQuantity} units</strong></span>
                                     </div>

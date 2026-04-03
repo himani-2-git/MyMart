@@ -66,7 +66,7 @@ const NotificationBell = () => {
             }
 
             setNotifications(notifs);
-        } catch (e) {
+        } catch {
             // Silently fail
         } finally {
             setLoading(false);
@@ -76,6 +76,19 @@ const NotificationBell = () => {
     useEffect(() => { fetchNotifications(); }, []);
 
     const unreadCount = notifications.length;
+    const formatTimeAgo = (value) => {
+        if (!value) return 'Now';
+
+        const diffMinutes = Math.max(0, Math.round((Date.now() - new Date(value).getTime()) / 60000));
+
+        if (diffMinutes < 1) return 'Just now';
+        if (diffMinutes < 60) return `${diffMinutes}m ago`;
+
+        const diffHours = Math.round(diffMinutes / 60);
+        if (diffHours < 24) return `${diffHours}h ago`;
+
+        return `${Math.round(diffHours / 24)}d ago`;
+    };
 
     return (
         <div className="relative">
@@ -125,6 +138,10 @@ const NotificationBell = () => {
                                         <div className="flex-1 min-w-0">
                                             <p className="text-sm font-semibold text-white">{n.title}</p>
                                             <p className="text-xs mt-0.5 leading-relaxed" style={{ color: '#9ca3af' }}>{n.message}</p>
+                                            <div className="mt-2 flex items-center gap-1.5 text-[11px]" style={{ color: '#4a4a6a' }}>
+                                                <Clock size={11} />
+                                                <span>{formatTimeAgo(n.time)}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 );

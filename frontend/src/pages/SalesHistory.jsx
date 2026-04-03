@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import API from '../services/api';
-import { useSettings } from '../context/SettingsContext';
-import { useToast } from '../components/ToastProvider';
+import { useSettings } from '../context/settings-context';
+import { useToast } from '../components/toast-context';
 import { SkeletonTable } from '../components/ui/Loader';
-import { ClipboardList, ChevronDown, ChevronUp, CreditCard, Banknote, Smartphone } from 'lucide-react';
+import { ClipboardList, ChevronDown, ChevronUp, CreditCard, Banknote, Smartphone, Download } from 'lucide-react';
 
 const S = { card: '#1e1e1e', surface: '#060c06', border: '#3e3f3e', muted: '#6b7280' };
 
@@ -27,25 +27,53 @@ const SalesHistory = () => {
     const [filterDate, setFilterDate] = useState('');
     const toast = useToast();
 
+    const fetchSales = useCallback(async () => {
+        try {
+            const { data } = await API.get('/api/sales');
+            setSales(data);
+        } catch {
+            toast.error('Failed to load sales history');
+        } finally {
+            setLoading(false);
+        }
+    }, [toast]);
+
     useEffect(() => {
-        const fetchSales = async () => {
-            try {
-                const { data } = await API.get('/api/sales');
-                setSales(data);
-            } catch (e) {
-                toast.error('Failed to load sales history');
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchSales();
-    }, []);
+    }, [fetchSales]);
 
     const filteredSales = filterDate
         ? sales.filter(s => new Date(s.createdAt).toISOString().split('T')[0] === filterDate)
         : sales;
 
     const totalRevenue = filteredSales.reduce((a, s) => a + s.totalPrice, 0);
+
+    const exportCSV = () => {
+        if (!filteredSales.length) {
+            toast.error('No data to export');
+            return;
+        }
+        const headers = ['Date', 'Time', 'Customer', 'Items Count', 'Payment Method', 'Total Price'];
+        const csvContent = [
+            headers.join(','),
+            ...filteredSales.map(s => [
+                new Date(s.createdAt).toLocaleDateString(),
+                new Date(s.createdAt).toLocaleTimeString(),
+                `"${s.customerName || 'Walk-In'}"`,
+                s.orderItems.length,
+                s.paymentMethod,
+                s.totalPrice.toFixed(2)
+            ].join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `sales_export_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+    };
 
     return (
         <div className="space-y-5">
@@ -73,6 +101,13 @@ const SalesHistory = () => {
                             Clear
                         </button>
                     )}
+                    <button onClick={exportCSV}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-colors"
+                        style={{ backgroundColor: '#1e1e1e', color: '#9ca3af', border: '1px solid #3e3f3e' }}
+                        onMouseEnter={e => e.currentTarget.style.color = '#fff'}
+                        onMouseLeave={e => e.currentTarget.style.color = '#9ca3af'}>
+                        <Download size={14} /> Export CSV
+                    </button>
                 </div>
             </div>
 

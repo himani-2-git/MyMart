@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import API from '../services/api';
-import { useSettings } from '../context/SettingsContext';
-import { useToast } from '../components/ToastProvider';
+import { useSettings } from '../context/settings-context';
+import { useToast } from '../components/toast-context';
 import ConfirmModal from '../components/ConfirmModal';
 import { SkeletonTable } from '../components/ui/Loader';
-import { Plus, DollarSign, X, Edit2, Trash2 } from 'lucide-react';
+import { Plus, DollarSign, X, Edit2, Trash2, Download } from 'lucide-react';
 
 const S = { card: '#1e1e1e', surface: '#060c06', border: '#3e3f3e', muted: '#6b7280' };
 const inputSt = { backgroundColor: '#060c06', border: '1px solid #3e3f3e', color: '#e2e8f0', borderRadius: '12px', padding: '10px 14px', outline: 'none', width: '100%', fontSize: '14px' };
@@ -20,11 +20,11 @@ const Expenses = () => {
     const [saving, setSaving] = useState(false);
     const toast = useToast();
 
-    const fetchExpenses = async () => {
+    const fetchExpenses = useCallback(async () => {
         try { const { data } = await API.get('/api/expenses'); setExpenses(data); setLoading(false); }
-        catch (e) { toast.error('Failed to load expenses'); setLoading(false); }
-    };
-    useEffect(() => { fetchExpenses(); }, []);
+        catch { toast.error('Failed to load expenses'); setLoading(false); }
+    }, [toast]);
+    useEffect(() => { fetchExpenses(); }, [fetchExpenses]);
 
     const openModal = (expense = null) => {
         if (expense) {
@@ -50,8 +50,8 @@ const Expenses = () => {
             }
             fetchExpenses(); setIsModalOpen(false); setEditingExpense(null);
             setFormData({ expenseType: 'Rent', amount: '', description: '' });
-        } catch (e) {
-            toast.error(e.response?.data?.message || 'Failed to save expense');
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to save expense');
         } finally {
             setSaving(false);
         }
@@ -63,7 +63,7 @@ const Expenses = () => {
             await API.delete(`/api/expenses/${deleteTarget}`);
             toast.success('Expense deleted successfully');
             fetchExpenses();
-        } catch (e) {
+        } catch {
             toast.error('Failed to delete expense');
         }
         setDeleteTarget(null);
@@ -73,6 +73,31 @@ const Expenses = () => {
     const total = expenses.reduce((s, e) => s + e.amount, 0);
     const typeColors = { Rent: '#54c750', Electricity: '#06b6d4', Salary: '#8b5cf6', Maintenance: '#22c55e', Marketing: '#f97316', Other: '#6b7280' };
 
+    const exportCSV = () => {
+        if (!expenses.length) {
+            toast.error('No data to export');
+            return;
+        }
+        const headers = ['Date', 'Type', 'Description', 'Amount'];
+        const csvContent = [
+            headers.join(','),
+            ...expenses.map(e => [
+                new Date(e.date).toLocaleDateString(),
+                e.expenseType,
+                `"${(e.description || '').replace(/"/g, '""')}"`,
+                e.amount.toFixed(2)
+            ].join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `expenses_export_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+    };
+
     return (
         <div className="space-y-5">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -80,11 +105,20 @@ const Expenses = () => {
                     <h1 className="text-2xl font-bold text-white">Expenses Tracking</h1>
                     <p className="text-sm mt-0.5" style={{ color: S.muted }}>Log and monitor overhead costs.</p>
                 </div>
-                <button onClick={() => openModal()}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-black transition-all active:scale-[0.98]"
-                    style={{ backgroundColor: '#54c750' }}>
-                    <Plus size={18} /> Add Expense
-                </button>
+                <div className="flex items-center gap-3">
+                    <button onClick={exportCSV}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-colors"
+                        style={{ backgroundColor: '#1e1e1e', color: '#9ca3af', border: '1px solid #3e3f3e' }}
+                        onMouseEnter={e => e.currentTarget.style.color = '#fff'}
+                        onMouseLeave={e => e.currentTarget.style.color = '#9ca3af'}>
+                        <Download size={16} /> Export
+                    </button>
+                    <button onClick={() => openModal()}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-black transition-all active:scale-[0.98]"
+                        style={{ backgroundColor: '#54c750' }}>
+                        <Plus size={18} /> Add Expense
+                    </button>
+                </div>
             </div>
 
             {/* Total Summary Card */}
