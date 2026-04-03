@@ -100,11 +100,11 @@ if (nodeEnv === 'production') {
     const frontendDist = path.join(__dirname, '../frontend/dist');
     app.use(express.static(frontendDist));
 
-    app.get('*', (req, res, next) => {
+    app.get('/*', (req, res, next) => {
         if (req.originalUrl.startsWith('/api')) {
             return next();
         }
-        res.sendFile(path.join(frontendDist, 'index.html'));
+        res.sendFile(path.resolve(__dirname, '../frontend/dist/index.html'));
     });
 } else {
     // Basic route for testing
