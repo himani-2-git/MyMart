@@ -8,7 +8,7 @@
     "install-all": "npm install && npm install --prefix backend && npm install --include=dev --prefix frontend"
   },
   "engines": {
-    "node": ">=18"
+    "node": "20.x"
   },
   "dependencies": {
     "concurrently": "^9.2.1"
